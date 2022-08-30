@@ -1,6 +1,6 @@
 import React from "react";
 import Modal from "antd/lib/modal";
-import { Button, Input, Row, Col, Popover } from "antd";
+import { Button, Col, Input, notification, Row } from "antd";
 import axios from "axios";
 
 const CustomModal = ({record}) => {
@@ -29,7 +29,7 @@ const CustomModal = ({record}) => {
   );
 };
 
-const Actions = ({record}) => {
+const Actions = ({record, getData}) => {
   const [visible, setVisible] = React.useState(false);
   const [comment, setComment] = React.useState();
 
@@ -41,7 +41,13 @@ const Actions = ({record}) => {
     axios.patch(`http://34.154.105.51:8080/api/v1/jobs/${record.id}`, {
       comment: comment,
       saved: true,
-    }).then(r => setVisible(false))
+    }).then(r => {
+      setVisible(false);
+      notification.success({
+        message: 'Saved Successfully'
+      });
+      getData();
+    })
   }
 
   return (
@@ -67,69 +73,7 @@ const Actions = ({record}) => {
   )
 }
 
-export default [
-  {
-    title: "Id",
-    dataIndex: "id",
-    key: "id",
-    defaultSortOrder: 'ascend',
-    sorter: (a, b) => a.id - b.id,
-  },
-  {
-    title: "Title",
-    dataIndex: "title",
-    key: "title",
-  },
-  {
-    title: "Category",
-    dataIndex: "category",
-    key: "category",
-  },
-  {
-    title: "Job Description",
-    dataIndex: "jobDescription",
-    key: "jobDescription",
-    render: (record) => {
-      return <CustomModal record={record}/>;
-    },
-  },
-  {
-    title: "Language",
-    dataIndex: "language",
-    key: "language",
-  },
-  {
-    title: "Location",
-    dataIndex: "location",
-    key: "location",
-  },
-  {
-    title: "My Comments",
-    dataIndex: "comments",
-    key: "comments",
-  },
-  {
-    title: 'Actions',
-    dataIndex: "action",
-    key: "action",
-    render: (_, record) => {
-      return (
-        <Popover placement='bottom' trigger="click" content={<Row>
-          <Col xs={24}>
-            <Button type='link' onClick={() => {
-              window.open(record?.url)
-            }
-            }>
-              View Details
-            </Button>
-          </Col>
-          <Col xs={24}>
-            <Actions record={record}/>
-          </Col>
-        </Row>}>
-          <Button type="primary" ghost>More Actions</Button>
-        </Popover>
-      )
-    }
-  }
-];
+export {
+  Actions,
+  CustomModal
+}

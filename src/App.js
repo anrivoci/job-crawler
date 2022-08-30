@@ -12,6 +12,7 @@ const App = () => {
         <Menu
           theme="dark"
           mode="horizontal"
+          onClick={() => window.location.reload()}
           defaultSelectedKeys={['home']}
           items={[
             {

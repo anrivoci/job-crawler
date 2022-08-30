@@ -1,105 +1,136 @@
 import React from 'react';
 import axios from "axios";
-import { Table, Empty, Input, Col, Row, Button, notification } from "antd";
+import { Button, Col, Empty, Input, notification, Popover, Row, Table } from "antd";
 import Modal from "antd/lib/modal";
+import { Actions, CustomModal } from "../../config";
 
-const CustomModal = ({record}) => {
+const EditComment = ({getData, record}) => {
   const [visible, setVisible] = React.useState(false);
+  const [state, setState] = React.useState()
 
-  const div = document.createElement("div");
-  div.innerHTML = record;
-  const text = div.textContent || div.innerText || "";
+  const onChange = (e) => {
+    setState(e.target.value)
+  }
+
+  const onSave = () => {
+    axios.patch(`http://34.154.105.51:8080/api/v1/jobs/${record.id}`, {
+      saved: true,
+      comment: state
+    }).then(() => {
+      setVisible(false)
+      notification.success({
+        message: 'Edited Successfully'
+      })
+      getData();
+    })
+  }
 
   return (
     <>
-      <p style={{cursor: "pointer"}} onClick={() => setVisible(true)}>
-        {text.substring(0, 40) + "..."}
-      </p>
+      <Button type='link' onClick={() => setVisible(true)}>Edit Comment</Button>
       <Modal
-        width={800}
-        title="Job Description"
-        onOk={() => setVisible(false)}
+        width={400}
+        okText='Save'
+        title="Edit Comment"
+        onOk={onSave}
         onCancel={() => setVisible(false)}
         visible={visible}
       >
-        {text}
+        <Input
+          placeholder={record.comment}
+          onChange={onChange}
+        />
       </Modal>
     </>
   );
-};
-
-const config = [
-  {
-    title: "Id",
-    dataIndex: "id",
-    key: "id",
-    defaultSortOrder: 'ascend',
-    sorter: (a, b) => a.id - b.id,
-  },
-  {
-    title: "Title",
-    dataIndex: "title",
-    key: "title",
-  },
-  {
-    title: "Category",
-    dataIndex: "category",
-    key: "category",
-  },
-  {
-    title: "Job Description",
-    dataIndex: "jobDescription",
-    key: "jobDescription",
-    render: (record) => {
-      return <CustomModal record={record}/>;
-    },
-  },
-  {
-    title: "Language",
-    dataIndex: "language",
-    key: "language",
-  },
-  {
-    title: "Location",
-    dataIndex: "location",
-    key: "location",
-  },
-  {
-    title: "My Comments",
-    dataIndex: "comment",
-    key: "comment",
-  },
-  {
-    title: 'Actions',
-    dataIndex: "action",
-    key: "action",
-    render: (_, record) => {
-      const onRemove = () => {
-        axios.patch(`http://34.154.105.51:8080/api/v1/jobs/${record.id}`, {
-          saved: false,
-          comment: ' '
-        }).then(() => {
-          notification.success({
-            message: 'Notification Title',
-          })
-        })
-      }
-      return (
-        <Button style={{backgroundColor: 'lightcoral', color: 'white'}} onClick={onRemove}>
-          Remove
-        </Button>
-      )
-    }
-  },
-]
+}
 
 const SavedJobs = () => {
   const [data, setData] = React.useState([]);
   const [searchKey, setSearchKey] = React.useState('')
 
   React.useEffect(() => {
-    axios.get(`http://34.154.105.51:8080/api/v1/jobs?offset=0&limit=1000&saved=true`).then(r => setData(r.data))
+    getData();
   }, []);
+
+  const getData = () => {
+    axios.get(`http://34.154.105.51:8080/api/v1/jobs?offset=0&limit=1000&saved=true`).then(r => setData(r.data))
+  }
+
+  const config = [
+    {
+      title: "Id",
+      dataIndex: "id",
+      key: "id",
+      defaultSortOrder: 'ascend',
+      sorter: (a, b) => a.id - b.id,
+    },
+    {
+      title: "Job Title",
+      dataIndex: "title",
+      key: "title",
+    },
+    {
+      title: "Category",
+      dataIndex: "category",
+      key: "category",
+    },
+    {
+      title: "Job Description",
+      dataIndex: "jobDescription",
+      key: "jobDescription",
+      render: (record) => {
+        return <CustomModal record={record}/>;
+      },
+    },
+    {
+      title: "Language",
+      dataIndex: "language",
+      key: "language",
+    },
+    {
+      title: "Location",
+      dataIndex: "location",
+      key: "location",
+    },
+    {
+      title: "My Comments",
+      dataIndex: "comment",
+      key: "comment",
+    },
+    {
+      title: 'Actions',
+      dataIndex: "action",
+      key: "action",
+      render: (_, record) => {
+        const onRemove = () => {
+          axios.patch(`http://34.154.105.51:8080/api/v1/jobs/${record.id}`, {
+            saved: false,
+            comment: ' '
+          }).then(() => {
+            notification.success({
+              message: 'Notification Title',
+            })
+            getData();
+          })
+        }
+        return (
+          <Popover placement='bottom' content={<Row>
+            <Col xs={24}>
+              <EditComment getData={getData} record={record}/>
+            </Col>
+            <Col xs={24}>
+              <Button type='link' style={{color: 'lightcoral'}} onClick={onRemove}>Remove</Button>
+            </Col>
+          </Row>}>
+            <Button>
+              More Actions
+            </Button>
+          </Popover>
+        )
+      }
+    },
+  ]
 
   let filteredData = data;
 
@@ -115,13 +146,14 @@ const SavedJobs = () => {
     <Row gutter={[8, 8]}>
       <Col xs={24}>
         <Input.Search
-          placeholder="Search By Title,Language,Location or Category"
+          placeholder="Search By Job Title,Category,Language or Location"
           onChange={(e) => setSearchKey(e.target.value)}
         />
       </Col>
       <Col xs={24}>
         {!data ? <Empty/> : (
           <Table
+            style={{overflow: 'auto'}}
             columns={config}
             dataSource={filteredData}
           />
