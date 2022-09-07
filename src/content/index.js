@@ -1,8 +1,21 @@
-import React from 'react';
-import { Button, Col, Row, Select, Table, Input, Tabs, Empty, Spin, Popover } from "antd";
+import React from "react";
+import {
+  Button,
+  Col,
+  Row,
+  Select,
+  Table,
+  Input,
+  Tabs,
+  Empty,
+  Spin,
+  Popover,
+  DatePicker,
+} from "antd";
 import { Actions, CustomModal } from "../config";
 import axios from "axios";
 import SavedJobs from "./saved_jobs";
+import moment from "moment";
 
 const options = [
   {
@@ -19,33 +32,38 @@ const options = [
 
 const Content = () => {
   const [selected, setSelected] = React.useState([]);
-  const [searchKey, setSearchKey] = React.useState('');
+  const [searchKey, setSearchKey] = React.useState("");
   const [data, setData] = React.useState([]);
-  const [loading, setLoading] = React.useState(false)
+  const [loading, setLoading] = React.useState(false);
+  const [date, setDate] = React.useState({
+    startDate: null,
+    endDate: null,
+  });
+
+  let params;
+
+  selected.map((item) => {
+    if (selected.length === 1 && selected.includes(item))
+      return (params = `&webPageId=${item}`);
+    else return (params = " ");
+  });
 
   const getData = () => {
-    let params;
-
-    if (selected.length === 1 && selected.includes('TUM'))
-      params = `&webPageId=TUM`
-    else if (selected.length === 1 && selected.includes('TUB'))
-      params = `&webPageId=TUB`
-    else
-      params = ''
-
     axios
-      .get(`http://34.154.105.51:8080/api/v1/jobs?offset=0&limit=1000&saved=false${params}`)
+      .get(
+        `http://34.154.105.51:8080/api/v1/jobs?offset=0&limit=1000&saved=false${params}`
+      )
       .then((res) => {
         setData(res.data);
       });
-  }
+  };
 
-  const testColumns = [
+  const columns = [
     {
       title: "Id",
       dataIndex: "id",
       key: "id",
-      defaultSortOrder: 'ascend',
+      defaultSortOrder: "ascend",
       sorter: (a, b) => a.id - b.id,
     },
     {
@@ -63,7 +81,7 @@ const Content = () => {
       dataIndex: "jobDescription",
       key: "jobDescription",
       render: (record) => {
-        return <CustomModal record={record}/>;
+        return <CustomModal record={record} />;
       },
     },
     {
@@ -77,58 +95,102 @@ const Content = () => {
       key: "location",
     },
     {
+      title: "Date",
+      dataIndex: "articleDate",
+      key: "articleDate",
+    },
+    {
       title: "My Comments",
       dataIndex: "comment",
       key: "comment",
     },
     {
-      title: 'Actions',
+      title: "Actions",
       dataIndex: "action",
       key: "action",
       render: (_, record) => {
         return (
-          <Popover placement='bottom' trigger="click" content={<Row>
-            <Col xs={24}>
-              <Button type='link' onClick={() => {
-                window.open(record?.url)
-              }
-              }>
-                View Details
-              </Button>
-            </Col>
-            <Col xs={24}>
-              <Actions record={record} getData={getData}/>
-            </Col>
-          </Row>}>
+          <Popover
+            placement="bottom"
+            trigger="click"
+            content={
+              <Row>
+                <Col xs={24}>
+                  <Button
+                    type="link"
+                    onClick={() => {
+                      window.open(record?.url);
+                    }}
+                  >
+                    View Details
+                  </Button>
+                </Col>
+                <Col xs={24}>
+                  <Actions record={record} getData={getData} />
+                </Col>
+              </Row>
+            }
+          >
             <Button>More Actions</Button>
           </Popover>
-        )
-      }
-    }
+        );
+      },
+    },
   ];
 
   const handleClick = () => {
-    getData()
+    getData();
   };
 
   const onProcess = () => {
     setLoading(true);
-    axios.post('http://34.154.105.51:8080/api/v1/jobs/process-all').then(() => {
+    axios.post("http://34.154.105.51:8080/api/v1/jobs/process-all").then(() => {
       getData();
       setLoading(false);
-    })
-  }
+    });
+  };
 
+  const handleChange = (attr) => (e) => {
+    const value = moment(e, "DD.MM.YYYY").format();
+    setDate((prev) => ({
+      ...prev,
+      [attr]: value,
+    }));
+  };
 
   let searchedData = data;
 
   if (searchKey)
     searchedData = data.filter((item) => {
-      return item.title && item.title.toString().toLowerCase().includes(searchKey.toLowerCase()) ||
-        item.category && item.category.toString().toLowerCase().includes(searchKey.toLowerCase()) ||
-        item.location && item.location.toString().toLowerCase().includes(searchKey.toLowerCase()) ||
-        item.language && item.language.toString().toLowerCase().includes(searchKey.toLowerCase())
-    })
+      return (
+        (item.title &&
+          item.title
+            .toString()
+            .toLowerCase()
+            .includes(searchKey.toLowerCase())) ||
+        (item.category &&
+          item.category
+            .toString()
+            .toLowerCase()
+            .includes(searchKey.toLowerCase())) ||
+        (item.location &&
+          item.location
+            .toString()
+            .toLowerCase()
+            .includes(searchKey.toLowerCase())) ||
+        (item.language &&
+          item.language
+            .toString()
+            .toLowerCase()
+            .includes(searchKey.toLowerCase()))
+      );
+    });
+  else if (date.startDate && date.endDate)
+    searchedData = data.filter((item) => {
+      const value = moment(item.articleDate, "DD.MM.YYYY").format();
+      return value > date.startDate && value < date.endDate;
+    });
+  else searchedData = data;
 
   return (
     <Row gutter={[16, 16]} align="middle" justify="center">
@@ -136,15 +198,15 @@ const Content = () => {
         <h1>Select University</h1>
       </Col>
       <Col xs={24}>
-        <Row justify='center' align='middle' gutter={[8, 8]}>
-          <Col>
+        <Row justify="center" align="middle" gutter={[8, 8]}>
+          <Col xs={24} sm={8}>
             <Select
               allowClear
               mode="multiple"
               onChange={(e) => setSelected(e)}
               placeholder="Select University"
               style={{
-                width: "300px",
+                width: "100%",
               }}
             >
               {options.map((option) => (
@@ -155,29 +217,74 @@ const Content = () => {
             </Select>
           </Col>
           <Col>
-            <Button type='primary' disabled={!selected.length} onClick={handleClick}>Get Data</Button>
+            <Button
+              type="primary"
+              disabled={!selected.length}
+              onClick={handleClick}
+            >
+              Get Data
+            </Button>
           </Col>
           <Col>
-            <Button onClick={onProcess} disabled={!data.length}>Process New Jobs</Button>
+            <Button onClick={onProcess} disabled={!data.length}>
+              Process New Jobs
+            </Button>
           </Col>
         </Row>
       </Col>
       <Col xs={24}>
         <Tabs defaultActiveKey="1">
-          <Tabs.TabPane tab='All Jobs' key='1'>
-            {data.length === 0 ? <Empty/> : (
+          <Tabs.TabPane tab="All Jobs" key="1">
+            {data.length === 0 ? (
+              <Empty />
+            ) : (
               <Spin spinning={loading}>
                 <Row gutter={[8, 8]}>
                   <Col xs={24}>
-                    <Input.Search
-                      placeholder="Search By Job Title,Category,Language or Location"
-                      onChange={(e) => setSearchKey(e.target.value)}
-                    />
+                    <Row gutter={8}>
+                      <Col flex="auto">
+                        <Row>
+                          <Col xs={24}>Search</Col>
+                          <Col xs={24}>
+                            <Input.Search
+                              placeholder="Search By Job Title,Category,Language or Location"
+                              onChange={(e) => setSearchKey(e.target.value)}
+                            />
+                          </Col>
+                        </Row>
+                      </Col>
+                      <Col xs={24} sm={8}>
+                        <Row gutter={8}>
+                          <Col xs={12}>
+                            <Row>
+                              <Col xs={24}>From Date</Col>
+                              <Col xs={24}>
+                                <DatePicker
+                                  onChange={handleChange("startDate")}
+                                  style={{ width: "100%" }}
+                                />
+                              </Col>
+                            </Row>
+                          </Col>
+                          <Col xs={12}>
+                            <Row>
+                              <Col xs={24}>To Date</Col>
+                              <Col xs={24}>
+                                <DatePicker
+                                  onChange={handleChange("endDate")}
+                                  style={{ width: "100%" }}
+                                />
+                              </Col>
+                            </Row>
+                          </Col>
+                        </Row>
+                      </Col>
+                    </Row>
                   </Col>
                   <Col xs={24}>
                     <Table
-                      style={{overflow: 'auto'}}
-                      columns={testColumns}
+                      style={{ overflow: "auto" }}
+                      columns={columns}
                       dataSource={searchedData}
                     />
                   </Col>
@@ -185,8 +292,8 @@ const Content = () => {
               </Spin>
             )}
           </Tabs.TabPane>
-          <Tabs.TabPane tab='Saved Jobs' key='2'>
-            <SavedJobs/>
+          <Tabs.TabPane tab="Saved Jobs" key="2">
+            <SavedJobs />
           </Tabs.TabPane>
         </Tabs>
       </Col>
