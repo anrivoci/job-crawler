@@ -33,6 +33,7 @@ const options = [
 const Content = () => {
   const [selected, setSelected] = React.useState([]);
   const [searchKey, setSearchKey] = React.useState("");
+  const [activeKey, setActiveKey] = React.useState("1");
   const [data, setData] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
   const [date, setDate] = React.useState({
@@ -194,46 +195,50 @@ const Content = () => {
 
   return (
     <Row gutter={[16, 16]} align="middle" justify="center">
-      <Col>
-        <h1>Select University</h1>
-      </Col>
-      <Col xs={24}>
-        <Row justify="center" align="middle" gutter={[8, 8]}>
-          <Col xs={24} sm={8}>
-            <Select
-              allowClear
-              mode="multiple"
-              onChange={(e) => setSelected(e)}
-              placeholder="Select University"
-              style={{
-                width: "100%",
-              }}
-            >
-              {options.map((option) => (
-                <Select.Option key={option.id} value={option.key}>
-                  {option.name}
-                </Select.Option>
-              ))}
-            </Select>
-          </Col>
+      {activeKey === "1" && (
+        <>
           <Col>
-            <Button
-              type="primary"
-              disabled={!selected.length}
-              onClick={handleClick}
-            >
-              Get Data
-            </Button>
+            <h1>Select University</h1>
           </Col>
-          <Col>
-            <Button onClick={onProcess} disabled={!data.length}>
-              Process New Jobs
-            </Button>
+          <Col xs={24}>
+            <Row justify="center" align="middle" gutter={[8, 8]}>
+              <Col xs={24} sm={8}>
+                <Select
+                  allowClear
+                  mode="multiple"
+                  onChange={(e) => setSelected(e)}
+                  placeholder="Select University"
+                  style={{
+                    width: "100%",
+                  }}
+                >
+                  {options.map((option) => (
+                    <Select.Option key={option.id} value={option.key}>
+                      {option.name}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Col>
+              <Col>
+                <Button
+                  type="primary"
+                  disabled={!selected.length}
+                  onClick={handleClick}
+                >
+                  Get Data
+                </Button>
+              </Col>
+              <Col>
+                <Button onClick={onProcess} disabled={!data.length}>
+                  Process New Jobs
+                </Button>
+              </Col>
+            </Row>
           </Col>
-        </Row>
-      </Col>
+        </>
+      )}
       <Col xs={24}>
-        <Tabs defaultActiveKey="1">
+        <Tabs defaultActiveKey="1" onChange={(key) => setActiveKey(key)}>
           <Tabs.TabPane tab="All Jobs" key="1">
             {data.length === 0 ? (
               <Empty />
