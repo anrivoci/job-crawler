@@ -130,7 +130,7 @@ const SavedJobs = () => {
       render: (_, record) => {
         const onRemove = () => {
           axios
-            .patch(`https://34.154.105.51:443/api/v1/jobs/${record.id}`, {
+            .patch(`http://34.154.105.51:8080/api/v1/jobs/${record.id}`, {
               saved: false,
               comment: " ",
             })
