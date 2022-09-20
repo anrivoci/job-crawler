@@ -5,10 +5,9 @@ import axios from "axios";
 
 const CustomModal = ({record}) => {
   const [visible, setVisible] = React.useState(false);
+  const regex = /(<([^>]+)>)/ig;
 
-  const div = document.createElement("div");
-  div.innerHTML = record;
-  const text = div.textContent || div.innerText || "";
+  const text = record.replace(regex, "")
 
   return (
     <>

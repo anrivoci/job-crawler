@@ -101,11 +101,6 @@ const Content = () => {
       key: "articleDate",
     },
     {
-      title: "My Comments",
-      dataIndex: "comment",
-      key: "comment",
-    },
-    {
       title: "Actions",
       dataIndex: "action",
       key: "action",
