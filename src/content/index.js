@@ -52,7 +52,7 @@ const Content = () => {
   const getData = () => {
     axios
       .get(
-        `http://34.154.105.51:8080/api/v1/jobs?offset=0&limit=1000&saved=false${params}`
+        `http://34.154.54.36:9090/api/v1/jobs?offset=0&limit=1000&saved=false${params}`
       )
       .then((res) => {
         setData(res.data);
@@ -140,7 +140,7 @@ const Content = () => {
 
   const onProcess = () => {
     setLoading(true);
-    axios.post("http://34.154.105.51:8080/api/v1/jobs/process-all").then(() => {
+    axios.post("http://34.154.54.36:9090/api/v1/jobs/process-all").then(() => {
       getData();
       setLoading(false);
     });

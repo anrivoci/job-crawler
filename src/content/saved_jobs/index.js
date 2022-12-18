@@ -25,7 +25,7 @@ const EditComment = ({ getData, record }) => {
 
   const onSave = () => {
     axios
-      .patch(`http://34.154.105.51:8080/api/v1/jobs/${record.id}`, {
+      .patch(`http://34.154.54.36:9090/api/v1/jobs/${record.id}`, {
         saved: true,
         comment: state,
       })
@@ -72,7 +72,7 @@ const SavedJobs = () => {
   const getData = () => {
     axios
       .get(
-        `http://34.154.105.51:8080/api/v1/jobs?offset=0&limit=1000&saved=true`
+        `http://34.154.54.36:9090/api/v1/jobs?offset=0&limit=1000&saved=true`
       )
       .then((r) => setData(r.data));
   };
@@ -130,7 +130,7 @@ const SavedJobs = () => {
       render: (_, record) => {
         const onRemove = () => {
           axios
-            .patch(`http://34.154.105.51:8080/api/v1/jobs/${record.id}`, {
+            .patch(`http://34.154.54.36:9090/api/v1/jobs/${record.id}`, {
               saved: false,
               comment: " ",
             })

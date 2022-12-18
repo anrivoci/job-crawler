@@ -37,7 +37,7 @@ const Actions = ({record, getData}) => {
   }
 
   const onOk = () => {
-    axios.patch(`http://34.154.105.51:8080/api/v1/jobs/${record.id}`, {
+    axios.patch(`http://34.154.54.36:9000/api/v1/jobs/${record.id}`, {
       comment: comment,
       saved: true,
     }).then(r => {
